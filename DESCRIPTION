@@ -1,10 +1,32 @@
 Package: blockr.code
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Idiomatic code export for 'blockr'
+Version: 0.0.1
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    c(person(given = "Nicolas",
+             family = "Bennett",
+             role = c("aut", "cre"),
+             email = "nicolas@cynkra.com"),
+      person(given = "Christoph",
+             family = "Sax",
+             role = "aut",
+             email = "christoph@cynkra.com")
+    )
+Description: The code export plugin module provided by 'blockr.core' is
+    implemented to be as simple as possible. In order to do so, compromises
+    were made in terms of code presentation, wrapping expressions with calls
+    to 'with' and 'local', even in cases where this is not strictly necessary.
+    This plugin is aimed at exporting more idiomatic code whenever possible.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
+Config/testthat/edition: 3
+Imports:
+    blockr.core (>= 0.1.2),
+    styler,
+    xml2,
+    downlit,
+    shiny,
+    htmltools
+Suggests:
+    testthat (>= 3.0.0)
