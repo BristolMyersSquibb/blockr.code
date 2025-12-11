@@ -30,3 +30,5 @@ Imports:
     htmltools
 Suggests:
     testthat (>= 3.0.0)
+Remotes:
+    BristolMyersSquibb/blockr.core
