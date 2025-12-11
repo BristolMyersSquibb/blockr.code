@@ -1,7 +1,5 @@
 test_that("Simple linear path is identified correctly", {
 
-  # DAG: 1 -> 2 -> 3 -> 4
-
   adj <- matrix(0, 4, 4)
 
   adj[1, 2] <- 1
@@ -15,8 +13,6 @@ test_that("Simple linear path is identified correctly", {
 })
 
 test_that("Multiple separate linear paths are identified", {
-
-  # DAG: 1 -> 2 -> 3    4 -> 5 -> 6
 
   adj <- matrix(0, 6, 6)
 
@@ -37,11 +33,6 @@ test_that("Multiple separate linear paths are identified", {
 
 test_that("Branching point stops linear path", {
 
-  # DAG: 1 -> 2 -> 3
-  #           |
-  #           v
-  #           4
-
   adj <- matrix(0, 4, 4)
 
   adj[1, 2] <- 1
@@ -55,10 +46,6 @@ test_that("Branching point stops linear path", {
 })
 
 test_that("Merge point stops linear path", {
-
-  # DAG: 1 -> 2 -> 4
-  #                ^
-  #      3 --------|
 
   adj <- matrix(0, 4, 4)
 
@@ -74,8 +61,6 @@ test_that("Merge point stops linear path", {
 
 test_that("Single node is not returned", {
 
-  # DAG: 1    2    3 (no edges)
-
   adj <- matrix(0, 3, 3)
 
   expect_length(
@@ -85,8 +70,6 @@ test_that("Single node is not returned", {
 })
 
 test_that("Single edge creates a linear path", {
-
-  # DAG: 1 -> 2
 
   adj <- matrix(0, 2, 2)
 
@@ -99,11 +82,6 @@ test_that("Single edge creates a linear path", {
 })
 
 test_that("Complex DAG with branching and merging", {
-
-  # DAG: 1 -> 2 -> 3 -> 4
-  #           |
-  #           v
-  #      5 -> 6 -> 7
 
   adj <- matrix(0, 7, 7)
 
@@ -126,12 +104,6 @@ test_that("Complex DAG with branching and merging", {
 
 test_that("Diamond pattern DAG", {
 
-  # DAG:   1
-  #       / \
-  #      2   3
-  #       \ /
-  #        4
-
   adj <- matrix(0, 4, 4)
 
   adj[1, 2] <- 1
@@ -147,13 +119,11 @@ test_that("Diamond pattern DAG", {
 
 test_that("Long linear path", {
 
-  # DAG: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
-
   n <- 8
   adj <- matrix(0, n, n)
 
-  for (i in 1:(n-1)) {
-    adj[i, i+1] <- 1
+  for (i in 1:(n - 1)) {
+    adj[i, i + 1] <- 1
   }
 
   result <- identify_linear_subgraphs(adj)
@@ -163,8 +133,6 @@ test_that("Long linear path", {
 })
 
 test_that("Multiple short paths", {
-
-  # DAG: 1 -> 2    3 -> 4    5 -> 6
 
   adj <- matrix(0, 6, 6)
 
@@ -180,10 +148,6 @@ test_that("Multiple short paths", {
 
 test_that("Y-shaped DAG", {
 
-  # DAG: 1 -> 2 -> 4
-  #           ^
-  #           3
-
   adj <- matrix(0, 4, 4)
 
   adj[1, 2] <- 1
@@ -198,9 +162,6 @@ test_that("Y-shaped DAG", {
 
 test_that("Path with isolated source", {
 
-  # DAG: 1 -> 2 -> 3 -> 4
-  #      5
-
   adj <- matrix(0, 5, 5)
 
   adj[1, 2] <- 1
@@ -214,11 +175,6 @@ test_that("Path with isolated source", {
 })
 
 test_that("Chain starting mid-DAG after branch", {
-
-  # DAG: 1 -> 2 -> 3
-  #           |
-  #           v
-  #           4 -> 5 -> 6
 
   adj <- matrix(0, 6, 6)
 
@@ -244,9 +200,6 @@ test_that("Empty adjacency matrix", {
 })
 
 test_that("Linear path after branching node", {
-
-  # DAG: 1 -> 2
-  #      |--> 3 -> 4
 
   adj <- matrix(0, 4, 4)
   adj[1, 2] <- 1
