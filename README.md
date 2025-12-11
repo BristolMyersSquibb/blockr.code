@@ -5,6 +5,9 @@
 
 <!-- badges: start -->
 
+[![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![status](https://github.com/BristolMyersSquibb/blockr.code/actions/workflows/ci.yaml/badge.svg)](https://github.com/BristolMyersSquibb/blockr.code/actions/workflows/ci.yaml)
+[![coverage](https://codecov.io/gh/BristolMyersSquibb/blockr.code/graph/badge.svg?token=gHnhLBSVSc)](https://app.codecov.io/gh/BristolMyersSquibb/blockr.code)
 <!-- badges: end -->
 
 The code export plugin module provided by ‘blockr.core’ is implemented

@@ -40,14 +40,6 @@ jobs:
 
     secrets: inherit
 
-  revdep:
-
-    needs: smoke
-
-    uses: ./.github/workflows/revdep.yaml
-
-    secrets: inherit
-
   pkgdown:
 
     needs: smoke
