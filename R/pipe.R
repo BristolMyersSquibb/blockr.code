@@ -37,13 +37,10 @@ try_fold_path <- function(path, exprs, args, types) {
 
     this_id <- path[i]
 
-    if (!identical(types[[this_id]], "bquoted")) {
-      return(NULL)
-    }
-
     step <- pipe_step(
       exprs[[this_id]],
       args[[this_id]],
+      types[[this_id]],
       previous_id = path[i - 1L]
     )
 
@@ -57,15 +54,24 @@ try_fold_path <- function(path, exprs, args, types) {
   paste(unlist(pieces), collapse = " |> ")
 }
 
-pipe_step <- function(expr, args, previous_id) {
+pipe_step <- function(expr, args, type, previous_id) {
 
-  sub <- do.call(bquote, list(expr, args %||% list()))
+  if (identical(type, "bquoted")) {
+    sub <- do.call(bquote, list(expr, args %||% list()))
+    target <- as.name(previous_id)
+  } else if (identical(type, "quoted")) {
+    sub <- expr
+    input_name <- input_name_for(args, previous_id)
+    if (is.null(input_name)) return(NULL)
+    target <- as.name(input_name)
+  } else {
+    return(NULL)
+  }
 
   if (!is.call(sub)) {
     return(NULL)
   }
 
-  prev_name <- as.name(previous_id)
   arg_count <- length(sub) - 1L
 
   if (arg_count == 0L) {
@@ -74,7 +80,7 @@ pipe_step <- function(expr, args, previous_id) {
 
   matches <- vapply(
     seq_len(arg_count),
-    function(j) identical(sub[[j + 1L]], prev_name),
+    function(j) identical(sub[[j + 1L]], target),
     logical(1L)
   )
 
@@ -94,6 +100,17 @@ pipe_step <- function(expr, args, previous_id) {
   } else {
     NULL
   }
+}
+
+input_name_for <- function(args, previous_id) {
+
+  if (!length(args)) return(NULL)
+
+  prev <- as.name(previous_id)
+  match <- vapply(args, function(a) identical(a, prev), logical(1L))
+
+  if (sum(match) != 1L) return(NULL)
+  names(args)[match]
 }
 
 deparse_one <- function(x) paste0(deparse(x), collapse = "\n")
