@@ -46,6 +46,15 @@ check_assignment_recursive <- function(expr, local_scope) {
 
   if (is.call(expr)) {
 
+    if (!is.name(expr[[1]])) {
+      for (i in seq_along(expr)[-1]) {
+        if (check_assignment_recursive(expr[[i]], local_scope)) {
+          return(TRUE)
+        }
+      }
+      return(FALSE)
+    }
+
     fn <- as.character(expr[[1]])
 
     if (fn == "<-" && !local_scope) {
