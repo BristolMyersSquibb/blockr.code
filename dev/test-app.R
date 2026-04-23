@@ -8,13 +8,15 @@ library(blockr.core)
 serve(
   new_board(
     blocks = c(
-      a = new_dataset_block("BOD"),
-      b = new_dataset_block("ChickWeight"),
-      c = new_merge_block("Time")
+      a = new_dataset_block("ChickWeight"),
+      b = new_subset_block(subset = "Diet == 1"),
+      c = new_subset_block(subset = "weight > 100"),
+      d = new_subset_block(subset = "Time > 5")
     ),
-    links = c(
-      ac = new_link("a", "c", "x"),
-      bc = new_link("b", "c", "y")
+    links = links(
+      from  = c("a", "b", "c"),
+      to    = c("b", "c", "d"),
+      input = c("data", "data", "data")
     )
   ),
   plugins = custom_plugins(generate_flat_code())
