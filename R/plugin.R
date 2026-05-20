@@ -43,7 +43,7 @@ generate_flat_code_server <- function(id, board, ...) {
         input$code_mod,
         {
           out <- paste0(code(), collapse = "\n")
-          browser()
+
           if (!nchar(out)) {
             notify("No code available to display.")
             return()
