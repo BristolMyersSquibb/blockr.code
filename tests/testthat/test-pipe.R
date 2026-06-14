@@ -37,13 +37,13 @@ test_that("pipe_step refuses non-first unnamed arg (bquoted)", {
 test_that("pipe_step folds a quoted block via bare input symbol", {
 
   step <- pipe_step(
-    expr = quote(blockr.bi::gt_table(data, title = "x")),
+    expr = quote(blockr.viz::gt_table(data, title = "x")),
     args = list(data = quote(prev)),
     type = "quoted",
     previous_id = "prev"
   )
 
-  expect_equal(deparse(step), 'blockr.bi::gt_table(title = "x")')
+  expect_equal(deparse(step), 'blockr.viz::gt_table(title = "x")')
 })
 
 test_that("pipe_step folds a quoted block with named input via _", {

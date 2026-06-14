@@ -3,7 +3,7 @@ options(shiny.port = 3838, shiny.host = "0.0.0.0")
 pkgload::load_all("/workspace/blockr.core")
 pkgload::load_all("/workspace/blockr.io")
 pkgload::load_all("/workspace/blockr.dplyr")
-pkgload::load_all("/workspace/blockr.bi")
+pkgload::load_all("/workspace/blockr.viz")
 pkgload::load_all("/workspace/blockr.code")
 
 library(blockr.core)
