@@ -1,6 +1,6 @@
 Package: blockr.code
 Title: Idiomatic code export for 'blockr'
-Version: 0.0.2
+Version: 0.0.1
 Authors@R: 
     c(person(given = "Nicolas",
              family = "Bennett",
