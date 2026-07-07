@@ -1,18 +1,30 @@
 export_wrapped_code <- function(expressions, board) {
 
-  exprs <- do.call(
-    Map,
-    c(
-      list(wrap_expr),
-      export_code(expressions, board)
-    )
-  )
+  ec <- export_code(expressions, board)
 
-  exprs <- map(assignment, names(exprs), exprs)
-  exprs <- lapply(exprs, deparse)
-  exprs <- chr_ply(exprs, paste0, collapse = "\n")
+  fold <- fold_linear_paths(ec$exprs, ec$args, ec$types, board)
 
-  paste0(exprs, collapse = "\n\n")
+  out <- character()
+
+  for (id in names(ec$exprs)) {
+
+    if (id %in% fold$absorbed) {
+      next
+    }
+
+    if (id %in% names(fold$replacements)) {
+      out[[id]] <- fold$replacements[[id]]
+    } else {
+      wrapped <- wrap_expr(
+        ec$exprs[[id]],
+        ec$args[[id]],
+        ec$types[[id]]
+      )
+      out[[id]] <- paste0(deparse(assignment(id, wrapped)), collapse = "\n")
+    }
+  }
+
+  paste0(out, collapse = "\n\n")
 }
 
 wrap_expr <- function(exprs, args, types) {
@@ -45,6 +57,15 @@ check_assignment_recursive <- function(expr, local_scope) {
   }
 
   if (is.call(expr)) {
+
+    if (!is.name(expr[[1]])) {
+      for (i in seq_along(expr)[-1]) {
+        if (check_assignment_recursive(expr[[i]], local_scope)) {
+          return(TRUE)
+        }
+      }
+      return(FALSE)
+    }
 
     fn <- as.character(expr[[1]])
 
