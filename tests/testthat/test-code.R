@@ -71,9 +71,18 @@ test_that("assignment check", {
 
   # Namespaced calls: the call head is `::`/`:::`, not a name. Block
   # expressions self-qualify, so these must not error out.
-  expect_false(has_assignment(quote(dplyr::filter(data, mpg > 20))))
+  #
+  # The namespace is only ever quoted here, never evaluated, so which package
+  # it names is irrelevant to what is under test -- but R CMD check reads
+  # `pkg::` in tests statically and WARNs about an unstated dependency. Keep
+  # these on packages this one already imports; naming an undeclared one
+  # (dplyr, say) turns the smoke job red.
+  expect_false(has_assignment(quote(shiny::isTruthy(data))))
   expect_false(has_assignment(quote(base:::sum(x))))
-  expect_true(has_assignment(quote(dplyr::filter(data, {x <- 1; x}))))
+  expect_true(has_assignment(quote(shiny::isolate({
+    x <- 1
+    x
+  }))))
   expect_true(has_assignment(quote(g(a, b <- 2))))
   expect_true(has_assignment(quote(plot(x, y <- x^2))))
 
