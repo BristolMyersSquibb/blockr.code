@@ -73,7 +73,10 @@ test_that("assignment check", {
   # expressions self-qualify, so these must not error out.
   expect_false(has_assignment(quote(dplyr::filter(data, mpg > 20))))
   expect_false(has_assignment(quote(base:::sum(x))))
-  expect_true(has_assignment(quote(dplyr::filter(data, {x <- 1; x}))))
+  expect_true(has_assignment(quote(dplyr::filter(data, {
+    x <- 1
+    x
+  }))))
   expect_true(has_assignment(quote(g(a, b <- 2))))
   expect_true(has_assignment(quote(plot(x, y <- x^2))))
 
