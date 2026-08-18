@@ -11,7 +11,7 @@ generate_flat_code(
   ui = generate_flat_code_ui
 )
 
-generate_flat_code_server(id, board, ...)
+generate_flat_code_server(id, board, update, ...)
 
 generate_flat_code_ui(id, board)
 }
@@ -21,6 +21,8 @@ generate_flat_code_ui(id, board)
 \item{id}{Namespace ID}
 
 \item{board}{Reactive values object}
+
+\item{update}{Reactive value object to initiate board updates}
 
 \item{...}{Extra arguments passed from parent scope}
 }
@@ -36,4 +38,18 @@ be made available to the user. While the \code{generate_code} plugin bundled wit
 blockr.core can provide code to accurately reproduce all results (final and
 intermediate), this plugin is aimed at making this exported code as idiomatic
 as possible.
+}
+\details{
+Opening the modal asks for every block on the board to be built, through the
+\code{construct} board update component (see the "Evaluation requests" section of
+\code{\link[blockr.core:board_server]{blockr.core::board_server()}}), because the script is assembled from block
+expressions and an unbuilt block carries none. Nothing is evaluated: a board
+that defers its off-screen blocks stays deferred, and the front-end's gating
+is untouched.
+
+Export is held back while a block is not fully configured, or while one
+reports an error from its last run — either would put code into the script
+that does not reproduce the board. A block that has never run reports
+neither, so the modal offers to evaluate the board, which is a one-off that
+leaves the blocks dormant again but has them report what they found.
 }
