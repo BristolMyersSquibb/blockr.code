@@ -57,7 +57,7 @@ as possible.</p>
 <span>  ui <span class="op">=</span> <span class="va">generate_flat_code_ui</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">generate_flat_code_server</span><span class="op">(</span><span class="va">id</span>, <span class="va">board</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">generate_flat_code_server</span><span class="op">(</span><span class="va">id</span>, <span class="va">board</span>, <span class="va">update</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">generate_flat_code_ui</span><span class="op">(</span><span class="va">id</span>, <span class="va">board</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -78,6 +78,10 @@ as possible.</p>
 <dd><p>Reactive values object</p></dd>
 
 
+<dt id="arg-update">update<a class="anchor" aria-label="anchor" href="#arg-update"></a></dt>
+<dd><p>Reactive value object to initiate board updates</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Extra arguments passed from parent scope</p></dd>
 
@@ -88,6 +92,20 @@ as possible.</p>
 <code><a href="https://bristolmyerssquibb.github.io/blockr.core/reference/generate_code.html" class="external-link">generate_code()</a></code>, while the UI component (e.g. <code><a href="https://bristolmyerssquibb.github.io/blockr.core/reference/generate_code.html" class="external-link">generate_code_ui()</a></code>) is
 expected to return shiny UI (i.e. <code><a href="https://rdrr.io/pkg/shiny/man/reexports.html" class="external-link">shiny::tagList()</a></code>) and the server
 component (i.e. <code><a href="https://bristolmyerssquibb.github.io/blockr.core/reference/generate_code.html" class="external-link">generate_code_server()</a></code>) is expected to return <code>NULL</code>.</p>
+    </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>Opening the modal asks for every block on the board to be built, through the
+<code>construct</code> board update component (see the "Evaluation requests" section of
+<code><a href="https://bristolmyerssquibb.github.io/blockr.core/reference/board_server.html" class="external-link">blockr.core::board_server()</a></code>), because the script is assembled from block
+expressions and an unbuilt block carries none. Nothing is evaluated: a board
+that defers its off-screen blocks stays deferred, and the front-end's gating
+is untouched.</p>
+<p>Export is held back while a block is not fully configured, or while one
+reports an error from its last run — either would put code into the script
+that does not reproduce the board. A block that has never run reports
+neither, so the modal offers to evaluate the board, which is a one-off that
+leaves the blocks dormant again but has them report what they found.</p>
     </div>
 
   </div>
