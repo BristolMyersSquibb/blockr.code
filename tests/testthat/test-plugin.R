@@ -92,7 +92,6 @@ test_that("show code builds a deferred board without evaluating it", {
   testServer(
     get_s3_method("board_server", board),
     {
-      vis$required[["a"]](TRUE)
       vis$visible[["a"]](TRUE)
       session$flushReact()
 
@@ -105,11 +104,15 @@ test_that("show code builds a deferred board without evaluating it", {
         before = before,
         after = names(rv$blocks),
         status = reval_if(rv$eval[["b"]]),
-        required = vis$required[["b"]](),
+        eager = rv$eager_blocks(),
         body = as.character(output$`generate_code-code_out`$html)
       )
     },
-    args = list(x = board, plugins = plugins(generate_flat_code()))
+    args = list(
+      x = board,
+      plugins = plugins(generate_flat_code()),
+      callbacks = function(...) eager("front-end", "a")
+    )
   )
 
   # The off-screen block starts unbuilt, and showing the code builds it
@@ -119,7 +122,7 @@ test_that("show code builds a deferred board without evaluating it", {
   # Built for its expression and left dormant: the export needs blocks present,
   # not run, so the board stays as lazy as it was
   expect_identical(out$status, "dormant")
-  expect_true(is.na(out$required))
+  expect_identical(out$eager, list(`front-end` = "a"))
 
   # The whole script is exported, rather than an `NA` assignment standing in for
   # the block that was missing
