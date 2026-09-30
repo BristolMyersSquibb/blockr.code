@@ -119,9 +119,9 @@ test_that("show code builds a deferred board without evaluating it", {
   expect_identical(out$before, "a")
   expect_setequal(out$after, c("a", "b"))
 
-  # Built for its expression and left dormant: the export needs blocks present,
-  # not run, so the board stays as lazy as it was
-  expect_identical(out$status, "dormant")
+  # Built for its expression and left unevaluated: the export needs blocks
+  # present, not run, so the board stays as lazy as it was
+  expect_identical(out$status, "unevaluated")
   expect_identical(out$eager, list(`front-end` = "a"))
 
   # The whole script is exported, rather than an `NA` assignment standing in for
