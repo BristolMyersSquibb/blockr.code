@@ -74,13 +74,12 @@ code_ext_srv <- function(id, board, update, ...) {
 
 code_ext_ui <- function(id, board) {
   div(
+    class = "blockr-code-panel",
+    code_panel_deps(),
     div(
-      class = "d-flex justify-content-end mb-2",
-      actionButton(
-        NS(id, "code_eval"),
-        "Evaluate blocks",
-        class = "btn-secondary btn-sm"
-      )
+      class = "blockr-code-panel__tools",
+      actionButton(NS(id, "code_eval"), "Evaluate blocks", class = "btn-sm"),
+      copy_to_clipboard(NS(id, "code_txt"))
     ),
     uiOutput(NS(id, "code_out"))
   )
@@ -130,60 +129,49 @@ code_panel_body <- function(state, ns, script = NULL) {
     pre_class = "chroma"
   )
 
-  div(
-    class = "text-decoration-none position-relative",
-    highlight_deps(),
-    copy_to_clipboard(ns, "code_txt"),
-    div(id = ns("code_txt"), HTML(add_blank_targets(pre)))
-  )
+  div(id = ns("code_txt"), HTML(add_blank_targets(pre)))
 }
 
+# A panel with nothing to show says so in one italic line where the code would
+# be, as the design system's messages do. The `.blockr-empty` classes come with
+# the controls stylesheet every dock board loads.
 code_status_note <- function(state) {
 
-  div(
-    class = "text-muted",
+  tags$p(
+    class = "blockr-empty blockr-empty--panel",
     switch(
       state,
-      pending = "Preparing code...",
-      empty = "No code available to display.",
-      paste(
-        "The board is not ready. Finish configuring all blocks, and fix any",
-        "block reporting an error, before exporting code."
-      )
+      pending = "Waiting for every block to be built.",
+      empty = "No blocks on the board yet.",
+      "Some blocks are not configured yet or report an error."
     )
   )
 }
 
-copy_to_clipboard <- function(ns, id) {
-
-  deps <- htmltools::htmlDependency(
-    "copy-to-clipboard",
-    pkg_version(),
-    src = pkg_file("assets", "js"),
-    script = "copyToClipboard.js"
-  )
+copy_to_clipboard <- function(id) {
 
   tagList(
-    actionButton(
-      ns("copy_code"),
-      "",
-      class = paste(
-        "btn", "btn-outline-secondary", "btn-sm", "position-absolute",
-        "top-0", "end-0", "m-2"
-      ),
-      icon = icon("copy", "fa-solid"),
-      onclick = paste0("copyCode(\"", ns(id), "\");")
+    tags$button(
+      type = "button",
+      class = "btn btn-default btn-sm",
+      onclick = paste0("copyCode(\"", id, "\");"),
+      "Copy"
     ),
-    deps
+    htmltools::htmlDependency(
+      "copy-to-clipboard",
+      pkg_version(),
+      src = pkg_file("assets", "js"),
+      script = "copyToClipboard.js"
+    )
   )
 }
 
-highlight_deps <- function() {
+code_panel_deps <- function() {
   htmltools::htmlDependency(
-    "chroma-highlighting",
+    "code-panel",
     pkg_version(),
     src = pkg_file("assets", "css"),
-    stylesheet = "syntax-highlight.css"
+    stylesheet = c("syntax-highlight.css", "code-panel.css")
   )
 }
 

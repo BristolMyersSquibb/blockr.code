@@ -1,0 +1,36 @@
+/* The dock lays an extension's UI into its panel without an inset, so the
+   panel keeps its own, as the edit-board extension does. */
+.blockr-code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.blockr-code-panel__tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Code is 13px in the design system's mono stack on every code surface. */
+.blockr-code-panel pre.chroma {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-family: var(--blockr-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+/* The links to function docs are a lookup, not the reading: they keep their
+   token colour and show an underline only on hover. */
+.blockr-code-panel pre.chroma a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blockr-code-panel pre.chroma a:hover {
+  text-decoration: underline;
+}

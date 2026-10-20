@@ -92,7 +92,7 @@ test_that("export would emit `NA` for a board with unbuilt blocks", {
   body <- as.character(code_panel_body(code_export_state(ro), NS("gen")))
 
   expect_false(grepl("`NA` <-", body, fixed = TRUE))
-  expect_match(body, "Preparing")
+  expect_match(body, "Waiting for every block")
 })
 
 test_that("the code panel waits for a deferred board without building it", {
@@ -146,7 +146,7 @@ test_that("the code panel waits for a deferred board without building it", {
   # The panel builds nothing itself: the off-screen block stays unbuilt, and
   # the panel reports pending rather than exporting a partial script
   expect_identical(out$waiting$built, "a")
-  expect_match(out$waiting$body, "Preparing")
+  expect_match(out$waiting$body, "Waiting for every block")
 
   # Once the block is built, the whole script is exported. The board stays as
   # lazy as it was: the block is left unevaluated, and held eager by no one
@@ -205,12 +205,16 @@ test_that("code_export_state distinguishes ready, blocked and pending", {
   expect_identical(code_export_state(make_ro(list(a = blk()))), "pending")
 })
 
-test_that("the code panel offers a one-off evaluation", {
+test_that("the code panel offers a one-off evaluation and a copy", {
 
   ui <- as.character(code_ext_ui("gen", new_board()))
 
   expect_match(ui, "id=\"gen-code_eval\"", fixed = TRUE)
   expect_match(ui, "id=\"gen-code_out\"", fixed = TRUE)
+
+  # The copy button sits beside the code rather than inside it, so copying the
+  # target element yields the script alone
+  expect_match(ui, "copyCode(&quot;gen-code_txt&quot;)", fixed = TRUE)
 })
 
 test_that("code panel body highlights a script or shows a note", {
@@ -226,18 +230,22 @@ test_that("code panel body highlights a script or shows a note", {
   expect_match(ready, "chroma", fixed = TRUE)
   expect_match(trimws(code_txt), "^y <- 1$")
 
-  # The copy button sits beside the code rather than inside it, so copying the
-  # target element yields the script alone
-  expect_match(ready, "copyCode(&quot;gen-code_txt&quot;)", fixed = TRUE)
+  # The copy target holds the highlighted script and nothing else
   expect_match(ready, "id=\"gen-code_txt\"", fixed = TRUE)
 
-  expect_match(as.character(code_panel_body("pending", NS("gen"))), "Preparing")
+  expect_match(
+    as.character(code_panel_body("pending", NS("gen"))),
+    "Waiting for every block"
+  )
 
-  expect_match(as.character(code_panel_body("blocked", NS("gen"))), "not ready")
+  expect_match(
+    as.character(code_panel_body("blocked", NS("gen"))),
+    "not configured"
+  )
 
   # An empty board is ready, but has nothing to highlight
   expect_match(
     as.character(code_panel_body("ready", NS("gen"), "")),
-    "No code available"
+    "No blocks"
   )
 })
