@@ -11,11 +11,12 @@ Authors@R:
              role = "aut",
              email = "christoph@cynkra.com")
     )
-Description: The code export plugin module provided by 'blockr.core' is
-    implemented to be as simple as possible. In order to do so, compromises
-    were made in terms of code presentation, wrapping expressions with calls
-    to 'with' and 'local', even in cases where this is not strictly necessary.
-    This plugin is aimed at exporting more idiomatic code whenever possible.
+Description: The code export provided by 'blockr.core' is implemented to be
+    as simple as possible. In order to do so, compromises were made in terms
+    of code presentation, wrapping expressions with calls to 'with' and
+    'local', even in cases where this is not strictly necessary. This
+    'blockr.dock' extension is aimed at exporting more idiomatic code
+    whenever possible, and shows it in a panel beside the board.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -23,6 +24,7 @@ RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 Imports:
     blockr.core (>= 0.1.4),
+    blockr.dock (>= 0.2.0),
     styler,
     xml2,
     downlit,
@@ -31,4 +33,5 @@ Imports:
 Suggests:
     testthat (>= 3.0.0)
 Remotes:
-    BristolMyersSquibb/blockr.core
+    BristolMyersSquibb/blockr.core,
+    BristolMyersSquibb/blockr.dock

@@ -8,6 +8,27 @@ no_conditions <- function() {
   )
 }
 
+test_that("new_code_extension builds a dock extension", {
+
+  ext <- new_code_extension()
+
+  expect_true(blockr.dock::is_dock_extension(ext))
+  expect_s3_class(ext, "code_extension")
+  expect_identical(blockr.dock::extension_name(ext), "Code")
+
+  board <- blockr.dock::new_dock_board(extensions = ext)
+
+  # A dock board keys the extension by its class, and saves it as a call to the
+  # constructor, which restores it
+  expect_identical(blockr.dock::dock_ext_ids(board), "code")
+
+  expect_identical(
+    blockr_deser(blockr_ser(board)),
+    board,
+    ignore_function_env = TRUE
+  )
+})
+
 test_that("generate code", {
 
   board <- new_board(
@@ -23,25 +44,24 @@ test_that("generate code", {
     )
   )
 
-  plugin_args <- generate_plugin_args(board)
-  plugin_args$update <- reactiveVal()
+  ext_args <- generate_plugin_args(board)
+  ext_args$update <- reactiveVal()
 
   testServer(
-    generate_flat_code_server,
+    code_ext_srv,
     {
       expect_identical(code_export_state(board), "ready")
 
       expect_match(as.character(output$code_out), "merge", all = FALSE)
 
-      session$setInputs(code_mod = 1)
-
-      expect_identical(update(), list(construct = c("a", "b", "c")))
+      # Showing the script asks nothing of the board
+      expect_null(update())
 
       session$setInputs(code_eval = 1)
 
       expect_identical(update(), list(evaluate = c("a", "b", "c")))
     },
-    args = plugin_args
+    args = ext_args
   )
 })
 
@@ -59,7 +79,7 @@ test_that("export would emit `NA` for a board with unbuilt blocks", {
 
   expect_true(grepl("`NA` <-", junk, fixed = TRUE))
 
-  # Gating on the built set is what keeps the plugin from reaching the exporter
+  # Gating on the built set is what keeps the panel from reaching the exporter
   # with `b` missing: it reports pending rather than exporting junk
   ro <- list(
     blocks = list(a = list(server = list(state_ready = TRUE))),
@@ -69,13 +89,13 @@ test_that("export would emit `NA` for a board with unbuilt blocks", {
 
   expect_identical(code_export_state(ro), "pending")
 
-  body <- as.character(code_modal_body(code_export_state(ro), NS("gen")))
+  body <- as.character(code_panel_body(code_export_state(ro), NS("gen")))
 
   expect_false(grepl("`NA` <-", body, fixed = TRUE))
-  expect_match(body, "Preparing")
+  expect_match(body, "Waiting for every block")
 })
 
-test_that("show code builds a deferred board without evaluating it", {
+test_that("the code panel waits for a deferred board without building it", {
 
   old <- options(blockr.background_construction_delay = Inf)
   on.exit(options(old))
@@ -95,37 +115,45 @@ test_that("show code builds a deferred board without evaluating it", {
       vis$visible[["a"]](TRUE)
       session$flushReact()
 
-      before <- names(rv$blocks)
+      waiting <- list(
+        built = names(rv$blocks),
+        body = as.character(output$`code-code_out`$html)
+      )
 
-      session$setInputs(`generate_code-code_mod` = 1)
+      # Build the off-screen block, as the background pass of a board with a
+      # finite construction delay would
+      board_update(list(construct = "b"))
       session$flushReact()
 
       out <<- list(
-        before = before,
-        after = names(rv$blocks),
+        waiting = waiting,
+        built = names(rv$blocks),
         status = reval_if(rv$eval[["b"]]),
         eager = rv$eager_blocks(),
-        body = as.character(output$`generate_code-code_out`$html)
+        body = as.character(output$`code-code_out`$html)
       )
     },
     args = list(
       x = board,
-      plugins = plugins(generate_flat_code()),
-      callbacks = function(...) eager("front-end", "a")
+      plugins = plugins(),
+      callbacks = function(board, update, ...) {
+        code_ext_srv("code", board, update)
+        eager("front-end", "a")
+      }
     )
   )
 
-  # The off-screen block starts unbuilt, and showing the code builds it
-  expect_identical(out$before, "a")
-  expect_setequal(out$after, c("a", "b"))
+  # The panel builds nothing itself: the off-screen block stays unbuilt, and
+  # the panel reports pending rather than exporting a partial script
+  expect_identical(out$waiting$built, "a")
+  expect_match(out$waiting$body, "Waiting for every block")
 
-  # Built for its expression and left unevaluated: the export needs blocks
-  # present, not run, so the board stays as lazy as it was
+  # Once the block is built, the whole script is exported. The board stays as
+  # lazy as it was: the block is left unevaluated, and held eager by no one
+  expect_setequal(out$built, c("a", "b"))
   expect_identical(out$status, "unevaluated")
   expect_identical(out$eager, list(`front-end` = "a"))
 
-  # The whole script is exported, rather than an `NA` assignment standing in for
-  # the block that was missing
   expect_match(out$body, "ChickWeight", fixed = TRUE)
   expect_false(grepl("`NA` <-", out$body, fixed = TRUE))
 })
@@ -177,17 +205,21 @@ test_that("code_export_state distinguishes ready, blocked and pending", {
   expect_identical(code_export_state(make_ro(list(a = blk()))), "pending")
 })
 
-test_that("the code modal offers a one-off evaluation", {
+test_that("the code panel offers a one-off evaluation and a copy", {
 
-  modal <- as.character(code_modal(NS("gen")))
+  ui <- as.character(code_ext_ui("gen", new_board()))
 
-  expect_match(modal, "id=\"gen-code_eval\"", fixed = TRUE)
-  expect_match(modal, "id=\"gen-code_out\"", fixed = TRUE)
+  expect_match(ui, "id=\"gen-code_eval\"", fixed = TRUE)
+  expect_match(ui, "id=\"gen-code_out\"", fixed = TRUE)
+
+  # The copy button sits beside the code rather than inside it, so copying the
+  # target element yields the script alone
+  expect_match(ui, "copyCode(&quot;gen-code_txt&quot;)", fixed = TRUE)
 })
 
-test_that("code modal body highlights a script or shows a note", {
+test_that("code panel body highlights a script or shows a note", {
 
-  ready <- as.character(code_modal_body("ready", NS("gen"), "y <- 1"))
+  ready <- as.character(code_panel_body("ready", NS("gen"), "y <- 1"))
 
   # The script is highlighted, so it reaches the DOM as tokens rather than as a
   # contiguous string: read it back off the rendered `<pre>`
@@ -198,22 +230,22 @@ test_that("code modal body highlights a script or shows a note", {
   expect_match(ready, "chroma", fixed = TRUE)
   expect_match(trimws(code_txt), "^y <- 1$")
 
-  # The copy button sits beside the code rather than inside it, so copying the
-  # target element yields the script alone
-  expect_match(ready, "copyCode(&quot;gen-code_txt&quot;)", fixed = TRUE)
+  # The copy target holds the highlighted script and nothing else
   expect_match(ready, "id=\"gen-code_txt\"", fixed = TRUE)
 
-  expect_match(as.character(code_modal_body("pending", NS("gen"))), "Preparing")
+  expect_match(
+    as.character(code_panel_body("pending", NS("gen"))),
+    "Waiting for every block"
+  )
 
-  expect_match(as.character(code_modal_body("blocked", NS("gen"))), "not ready")
+  expect_match(
+    as.character(code_panel_body("blocked", NS("gen"))),
+    "not configured"
+  )
 
   # An empty board is ready, but has nothing to highlight
   expect_match(
-    as.character(code_modal_body("ready", NS("gen"), "")),
-    "No code available"
+    as.character(code_panel_body("ready", NS("gen"), "")),
+    "No blocks"
   )
-})
-
-test_that("dummy gen code ui test", {
-  expect_s3_class(generate_flat_code_ui("gen", new_board()), "shiny.tag.list")
 })

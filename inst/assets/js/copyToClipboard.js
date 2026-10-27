@@ -2,7 +2,7 @@ function copyCode(id, fallback = false) {
 
   var el = document.getElementById(id);
 
-  if (el.innerHTML === "") {
+  if (el === null || el.innerHTML === "") {
     window.Shiny.notifications.show(
       {
         html: "<span>No code to copy.</span>",
